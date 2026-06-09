@@ -30,7 +30,7 @@ export default function QuestionRenderer({ question, answer, onChange, showResul
   }
 
   const choiceClass = (choice: string) => {
-    const base = 'flex items-center gap-3 p-3 rounded-xl border-2 transition-colors cursor-pointer'
+    const base = 'flex items-center gap-3 p-3.5 sm:p-3 min-h-[52px] rounded-xl border-2 transition-all cursor-pointer touch-manipulation active:scale-[0.99]'
     if (showResult) {
       if (isCorrect(choice)) return `${base} border-green-400 bg-green-50 dark:bg-green-900/20`
       if ((Array.isArray(answer) ? answer.includes(choice) : answer === choice) && !isCorrect(choice))
@@ -38,7 +38,9 @@ export default function QuestionRenderer({ question, answer, onChange, showResul
       return `${base} border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800`
     }
     const selected = Array.isArray(answer) ? answer.includes(choice) : answer === choice
-    return `${base} ${selected ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-300'}`
+    return `${base} ${selected
+      ? 'border-primary-500 dark:border-violet-400 bg-primary-100 dark:bg-violet-600/30 dark:ring-2 dark:ring-violet-400/40 shadow-sm'
+      : 'border-gray-200 dark:border-gray-600/80 bg-white dark:bg-gray-900/70 hover:border-primary-300 dark:hover:border-violet-500/50'}`
   }
 
   const ChoiceCheck = ({ selected }: { selected: boolean }) =>
@@ -93,7 +95,7 @@ export default function QuestionRenderer({ question, answer, onChange, showResul
           const selected = answer === val
           const resultClass = showResult
             ? (isCorrect(val) ? 'border-green-400 bg-green-50 dark:bg-green-900/20' : selected ? 'border-red-400 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-gray-700')
-            : (selected ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-primary-300')
+            : (selected ? 'border-primary-500 dark:border-violet-400 bg-primary-100 dark:bg-violet-600/30 dark:ring-2 dark:ring-violet-400/40 shadow-sm' : 'border-gray-200 dark:border-gray-600/80 hover:border-primary-300 dark:hover:border-violet-500/50')
           return (
             <button key={val} onClick={() => !showResult && onChange(val)}
               className={`relative flex-1 py-4 rounded-xl border-2 font-semibold text-lg transition-colors ${resultClass}`}>

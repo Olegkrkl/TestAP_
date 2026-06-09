@@ -80,21 +80,22 @@ export default function Sidebar({ role }: Props) {
 
       <aside
         className={`sidebar-aside fixed top-0 left-0 h-full w-[260px] z-30 flex flex-col transition-transform duration-300
-          bg-[#0f0a1e] border-r border-white/[0.06]
+          bg-white dark:bg-[#0f0a1e] border-r border-primary-100/80 dark:border-white/[0.06]
+          shadow-[4px_0_24px_rgba(124,58,237,0.06)] dark:shadow-none
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-white/[0.06]">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-primary-100/80 dark:border-white/[0.06]">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-violet-500/30"
               style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #9333ea 100%)' }}>
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
-            <span className="font-display font-bold text-lg text-white tracking-tight">TestAP</span>
+            <span className="font-display font-bold text-lg text-gray-900 dark:text-white tracking-tight">TestAP</span>
           </div>
           <button
             onClick={() => dispatch(setSidebarOpen(false))}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+            className="lg:hidden p-1.5 rounded-lg hover:bg-primary-100 dark:hover:bg-white/10 text-gray-400 dark:text-white/50 hover:text-gray-700 dark:hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -102,24 +103,24 @@ export default function Sidebar({ role }: Props) {
 
         {/* User info */}
         {user && (
-          <div className="px-4 py-3.5 border-b border-white/[0.06]">
+          <div className="px-4 py-3.5 border-b border-primary-100/80 dark:border-white/[0.06]">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm ring-2 ring-white/10 shrink-0"
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm ring-2 ring-primary-200 dark:ring-white/10 shrink-0"
                 style={{ background: 'linear-gradient(135deg, #a78bfa 0%, #9333ea 100%)' }}>
                 {user.full_name.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{user.full_name}</p>
-                <p className="text-xs text-white/40 capitalize">{t(`auth.${user.role}`)}</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.full_name}</p>
+                <p className="text-xs text-gray-500 dark:text-white/40 capitalize">{t(`auth.${user.role}`)}</p>
               </div>
             </div>
             {role === 'student' && streakDays > 0 && (
               <div className="mt-3">
-                <div className="flex items-center justify-between text-xs text-white/50 mb-1">
+                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-white/50 mb-1">
                   <span>🔥 {streakDays} днів</span>
                   {nextMilestone && <span>{nextMilestone} дн.</span>}
                 </div>
-                <div className="h-1 bg-white/[0.08] rounded-full overflow-hidden">
+                <div className="h-1 bg-primary-100 dark:bg-white/[0.08] rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -149,10 +150,10 @@ export default function Sidebar({ role }: Props) {
         </nav>
 
         {/* Logout */}
-        <div className="p-3 border-t border-white/[0.06]">
+        <div className="p-3 border-t border-primary-100/80 dark:border-white/[0.06]">
           <button
             onClick={handleLogout}
-            className="sidebar-link w-full text-white/30 hover:text-rose-400 hover:bg-rose-500/10"
+            className="sidebar-link w-full text-gray-400 dark:text-white/30 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10"
           >
             <LogOut className="w-4 h-4 shrink-0" />
             {t('nav.logout')}

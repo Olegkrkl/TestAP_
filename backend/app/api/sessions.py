@@ -13,7 +13,7 @@ from app.schemas.session import (
     SessionStart, AnswerSave, SessionOut, TimeRemaining,
     ViolationReport, ResultOut, QuestionStatOut, FlagQuestion
 )
-from app.services.session_service import get_remaining_seconds, submit_session
+from app.services.session_service import get_remaining_seconds, submit_session, get_resume_session
 from app.services.badge_service import check_and_award_badges
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -28,15 +28,9 @@ async def start_session(data: SessionStart, current_user: CurrentUser, db: Async
     if test.status != "published" and not test.is_training:
         raise HTTPException(status_code=400, detail="Test is not available")
 
-    # Check if there's an existing in-progress session
-    existing = await db.execute(
-        select(TestSession).where(
-            TestSession.user_id == current_user.id,
-            TestSession.test_id == data.test_id,
-            TestSession.status == "in_progress",
-        )
-    )
-    sess = existing.scalar_one_or_none()
+    # Resume the newest in-progress session; clean up duplicate rows that can
+    # appear when the client fires /start twice (e.g. React Strict Mode).
+    sess = await get_resume_session(db, current_user.id, data.test_id)
     if sess:
         return SessionOut.model_validate(sess)
 

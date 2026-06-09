@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Flag, Lightbulb, ChevronLeft, ChevronRight, Send } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
@@ -11,6 +11,7 @@ import QuestionRenderer from '@/components/test/QuestionRenderer'
 import QuestionNav from '@/components/test/QuestionNav'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Spinner from '@/components/ui/Spinner'
+import PageBackground from '@/components/ui/PageBackground'
 
 export default function TakeTestPage() {
   const { id } = useParams<{ id: string }>()
@@ -26,9 +27,11 @@ export default function TakeTestPage() {
   const [showHint, setShowHint] = useState(false)
   const [timeUp, setTimeUp] = useState(false)
   const [violations, setViolations] = useState(0)
+  const initStartedRef = useRef(false)
 
   useEffect(() => {
-    if (!id) return
+    if (!id || initStartedRef.current) return
+    initStartedRef.current = true
     const init = async () => {
       const [test, session] = await Promise.all([
         testsApi.get(id),
@@ -133,8 +136,9 @@ export default function TakeTestPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-      <div className="text-center">
+    <div className="page-shell flex items-center justify-center">
+      <PageBackground />
+      <div className="relative text-center">
         <Spinner size="lg" />
         <p className="mt-4 text-gray-500">Завантаження тесту...</p>
       </div>
@@ -151,12 +155,13 @@ export default function TakeTestPage() {
   const unansweredCount = questions.length - answeredCount
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="page-shell">
+      <PageBackground />
       {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-4">
-        <h1 className="font-semibold text-gray-900 dark:text-white flex-1 truncate">{activeTest.title}</h1>
-        <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">
-          {currentIdx + 1} / {questions.length}
+      <div className="app-header px-4 py-3 flex items-center gap-3 sm:gap-4">
+        <h1 className="font-semibold text-gray-900 dark:text-white flex-1 truncate text-sm sm:text-base">{activeTest.title}</h1>
+        <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 shrink-0">
+          {currentIdx + 1}/{questions.length}
         </span>
         {activeSession && activeTest.time_limit && (
           <TestTimer sessionId={activeSession.id} onTimeUp={handleTimeUp} />
@@ -173,7 +178,7 @@ export default function TakeTestPage() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto p-4 grid lg:grid-cols-[1fr_220px] gap-6">
+      <div className="page-content max-w-6xl mx-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))] grid lg:grid-cols-[1fr_220px] gap-4 sm:gap-6">
         {/* Question panel */}
         <div className="card space-y-6">
           {/* Progress */}

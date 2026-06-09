@@ -25,8 +25,22 @@ async def _test_out(test: Test, db: AsyncSession) -> TestOut:
     )
 
 
+def _assert_can_manage_test(test: Test, user) -> None:
+    """Authorize test mutations. Teachers/admins manage any test; students may
+    manage ONLY their own training tests (is_training=True)."""
+    if user.role in ("teacher", "admin"):
+        return
+    if test.is_training and test.author_id == user.id:
+        return
+    raise HTTPException(status_code=403, detail="Not authorized")
+
+
 @router.post("/", response_model=TestOut, status_code=201)
-async def create_test(data: TestCreate, current_user: TeacherUser, db: AsyncSession = Depends(get_db)):
+async def create_test(data: TestCreate, current_user: CurrentUser, db: AsyncSession = Depends(get_db)):
+    # Students may create their own training tests only; full (assignable)
+    # tests remain teacher/admin-only.
+    if current_user.role not in ("teacher", "admin") and not data.is_training:
+        raise HTTPException(status_code=403, detail="Students can only create training tests")
     test = Test(**data.model_dump(), author_id=current_user.id)
     db.add(test)
     await db.flush()
@@ -151,6 +165,7 @@ async def get_test_preview(test_id: str, current_user: CurrentUser, db: AsyncSes
 
     from app.models.session import TestSession as _S
     from app.models.result import Result as _R
+    from app.services.session_service import get_resume_session
     attempts_used_r = await db.execute(
         select(func.count()).select_from(_S).where(
             _S.user_id == current_user.id,
@@ -160,14 +175,7 @@ async def get_test_preview(test_id: str, current_user: CurrentUser, db: AsyncSes
     )
     attempts_used = attempts_used_r.scalar() or 0
 
-    in_progress_r = await db.execute(
-        select(_S).where(
-            _S.user_id == current_user.id,
-            _S.test_id == test_id,
-            _S.status == "in_progress",
-        )
-    )
-    in_progress = in_progress_r.scalar_one_or_none()
+    in_progress = await get_resume_session(db, current_user.id, test_id)
 
     best_r = await db.execute(
         select(func.max(_R.percent)).where(_R.user_id == current_user.id, _R.test_id == test_id)
@@ -236,26 +244,24 @@ async def get_test(test_id: str, current_user: CurrentUser, db: AsyncSession = D
 
 
 @router.patch("/{test_id}", response_model=TestOut)
-async def update_test(test_id: str, data: TestUpdate, current_user: TeacherUser, db: AsyncSession = Depends(get_db)):
+async def update_test(test_id: str, data: TestUpdate, current_user: CurrentUser, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Test).where(Test.id == test_id))
     test = result.scalar_one_or_none()
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
-    if test.author_id != current_user.id and current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Not authorized")
+    _assert_can_manage_test(test, current_user)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(test, field, value)
     return await _test_out(test, db)
 
 
 @router.delete("/{test_id}", status_code=204)
-async def delete_test(test_id: str, current_user: TeacherUser, db: AsyncSession = Depends(get_db)):
+async def delete_test(test_id: str, current_user: CurrentUser, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Test).where(Test.id == test_id))
     test = result.scalar_one_or_none()
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
-    if test.author_id != current_user.id and current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Not authorized")
+    _assert_can_manage_test(test, current_user)
     await db.delete(test)
 
 
@@ -317,11 +323,12 @@ async def copy_test(test_id: str, current_user: TeacherUser, db: AsyncSession = 
 
 # Questions CRUD
 @router.post("/{test_id}/questions", response_model=QuestionOut, status_code=201)
-async def add_question(test_id: str, data: QuestionCreate, current_user: TeacherUser, db: AsyncSession = Depends(get_db)):
+async def add_question(test_id: str, data: QuestionCreate, current_user: CurrentUser, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Test).where(Test.id == test_id))
     test = result.scalar_one_or_none()
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
+    _assert_can_manage_test(test, current_user)
     q = Question(test_id=test_id, **data.model_dump())
     db.add(q)
     await db.flush()
@@ -329,7 +336,12 @@ async def add_question(test_id: str, data: QuestionCreate, current_user: Teacher
 
 
 @router.patch("/{test_id}/questions/{question_id}", response_model=QuestionOut)
-async def update_question(test_id: str, question_id: str, data: QuestionUpdate, current_user: TeacherUser, db: AsyncSession = Depends(get_db)):
+async def update_question(test_id: str, question_id: str, data: QuestionUpdate, current_user: CurrentUser, db: AsyncSession = Depends(get_db)):
+    test_result = await db.execute(select(Test).where(Test.id == test_id))
+    test = test_result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(status_code=404, detail="Test not found")
+    _assert_can_manage_test(test, current_user)
     result = await db.execute(select(Question).where(Question.id == question_id, Question.test_id == test_id))
     q = result.scalar_one_or_none()
     if not q:
@@ -340,7 +352,12 @@ async def update_question(test_id: str, question_id: str, data: QuestionUpdate, 
 
 
 @router.delete("/{test_id}/questions/{question_id}", status_code=204)
-async def delete_question(test_id: str, question_id: str, current_user: TeacherUser, db: AsyncSession = Depends(get_db)):
+async def delete_question(test_id: str, question_id: str, current_user: CurrentUser, db: AsyncSession = Depends(get_db)):
+    test_result = await db.execute(select(Test).where(Test.id == test_id))
+    test = test_result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(status_code=404, detail="Test not found")
+    _assert_can_manage_test(test, current_user)
     result = await db.execute(select(Question).where(Question.id == question_id, Question.test_id == test_id))
     q = result.scalar_one_or_none()
     if not q:

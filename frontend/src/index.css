@@ -5,19 +5,42 @@
 @layer base {
   :root {
     --sidebar-width: 260px;
+    --app-bg: #f5f3ff;
+    --app-bg-gradient: radial-gradient(ellipse 130% 90% at 50% -15%, #ddd6fe 0%, #ede9fe 30%, #f5f3ff 65%);
+  }
+
+  .dark {
+    --app-bg: #0c0a14;
+    --app-bg-gradient: radial-gradient(ellipse 130% 85% at 50% -8%, #3b2670 0%, #1e1238 28%, #120a22 55%, #0c0a14 100%);
   }
 
   * {
     box-sizing: border-box;
   }
 
+  html, body, #root {
+    min-height: 100%;
+    min-height: 100dvh;
+  }
+
   body {
-    @apply font-sans bg-[#f5f3ff] text-gray-900 antialiased;
+    @apply font-sans text-gray-900 antialiased;
+    background-color: var(--app-bg);
+    background-image: var(--app-bg-gradient);
+    background-attachment: fixed;
+    background-size: cover;
   }
 
   .dark body {
     @apply text-gray-100;
-    background: #0a0812;
+  }
+
+  /* iOS Safari breaks background-attachment: fixed — fall back to scroll on touch/narrow viewports */
+  @media (max-width: 1023px), (hover: none) and (pointer: coarse) {
+    body,
+    .page-shell {
+      background-attachment: scroll;
+    }
   }
 
   h1, h2 {
@@ -27,8 +50,39 @@
 }
 
 @layer components {
+  .page-shell {
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--app-bg);
+    background-image: var(--app-bg-gradient);
+    background-attachment: fixed;
+    background-size: cover;
+  }
+
+  .page-content {
+    @apply relative z-10;
+  }
+
+  .app-header {
+    @apply sticky top-0 z-20 border-b
+      bg-white/85 dark:bg-[#0c0a14]/85
+      backdrop-blur-md
+      border-primary-100/70 dark:border-white/[0.08];
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .app-footer-bar {
+    @apply sticky bottom-0 z-20 border-t
+      bg-white/85 dark:bg-[#0c0a14]/85
+      backdrop-blur-md
+      border-primary-100/70 dark:border-white/[0.08];
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
   .card {
-    @apply rounded-2xl p-6;
+    @apply rounded-2xl p-4 sm:p-6;
     background: linear-gradient(white, white) padding-box,
                 linear-gradient(135deg, rgba(124,58,237,0.08), rgba(147,51,234,0.04)) border-box;
     border: 1px solid transparent;
@@ -117,15 +171,20 @@
 
   .sidebar-link {
     @apply flex items-center gap-3 px-3 py-2.5 rounded-xl
-      text-white/50 hover:text-white/90 hover:bg-white/[0.07]
+      text-gray-600 hover:text-primary-700 hover:bg-primary-50
+      dark:text-white/50 dark:hover:text-white/90 dark:hover:bg-white/[0.07]
       transition-all duration-150 text-sm font-medium relative;
   }
 
   .sidebar-link.active {
-    @apply text-white;
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(12px);
-    box-shadow: inset 0 0 0 1px rgba(167,139,250,0.15);
+    @apply text-primary-700 dark:text-white;
+    background: rgba(124, 58, 237, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.15);
+  }
+
+  .dark .sidebar-link.active {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.15);
   }
 
   .sidebar-aside {
@@ -139,9 +198,13 @@
     top: 0;
     width: 1px;
     height: 100%;
-    background: linear-gradient(to bottom, #a78bfa, transparent 40%, #9333ea 80%, transparent);
+    background: linear-gradient(to bottom, #c4b5fd, transparent 40%, #ddd6fe 80%, transparent);
     pointer-events: none;
     z-index: 1;
+  }
+
+  .dark .sidebar-aside::before {
+    background: linear-gradient(to bottom, #a78bfa, transparent 40%, #9333ea 80%, transparent);
   }
 
   .badge {

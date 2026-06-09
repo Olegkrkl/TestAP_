@@ -40,7 +40,7 @@ export default function TopBar() {
   }
 
   return (
-    <header className="h-16 bg-[#f5f3ff] dark:bg-[#0a0812] border-b border-primary-100/60 dark:border-white/[0.06] flex items-center justify-between px-6 sticky top-0 z-10">
+    <header className="app-header h-16 flex items-center justify-between px-4 sm:px-6">
       <Tooltip content="Меню">
         <button
           onClick={() => dispatch(toggleSidebar())}
@@ -91,7 +91,7 @@ export default function TopBar() {
           </Tooltip>
 
           {showNotifs && (
-            <div className="absolute right-0 top-12 w-80 bg-white dark:bg-[#1a0a2e] rounded-2xl overflow-hidden z-50"
+            <div className="absolute right-0 top-12 w-[min(20rem,calc(100vw-2rem))] bg-white dark:bg-[#1a0a2e] rounded-2xl overflow-hidden z-50"
               style={{ boxShadow: '0 8px 32px rgba(124,58,237,0.18), 0 2px 8px rgba(0,0,0,0.1)', border: '1px solid rgba(124,58,237,0.12)' }}>
               <div className="p-3 border-b border-primary-50 dark:border-white/[0.07]">
                 <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Сповіщення</h3>

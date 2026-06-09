@@ -1,6 +1,7 @@
 import { Outlet, Link, Navigate } from 'react-router-dom'
 import { GraduationCap, CheckCircle } from 'lucide-react'
 import { useAppSelector } from '@/app/hooks'
+import PageBackground from '@/components/ui/PageBackground'
 
 const features = [
   '7 типів питань з drag & drop',
@@ -55,10 +56,11 @@ export default function AuthLayout() {
         </div>
       </div>
 
-      {/* Right — Form */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white dark:bg-[#0a0812]">
+      {/* Right — Form (full width on mobile) */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 page-shell relative">
+        <PageBackground />
         {/* Mobile logo */}
-        <Link to="/" className="flex items-center gap-2.5 mb-8 lg:hidden">
+        <Link to="/" className="relative z-10 flex items-center gap-2.5 mb-8 lg:hidden">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/30"
             style={{ background: 'linear-gradient(135deg, #8b5cf6, #9333ea)' }}>
             <GraduationCap className="w-6 h-6 text-white" />
@@ -66,7 +68,7 @@ export default function AuthLayout() {
           <span className="font-display font-bold text-2xl text-gray-900 dark:text-white">TestAP</span>
         </Link>
 
-        <div className="w-full max-w-sm">
+        <div className="relative z-10 w-full max-w-sm">
           <Outlet />
         </div>
       </div>

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useAppSelector } from '@/app/hooks'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
+import PageBackground from '@/components/ui/PageBackground'
 
 interface Props {
   role: 'student' | 'teacher' | 'admin'
@@ -18,16 +19,12 @@ export default function AppLayout({ role }: Props) {
   const mainShift = sidebarOpen ? 'lg:ml-[260px]' : 'lg:ml-0'
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--app-bg)' }}>
-      <style>{`
-        :root { --app-bg: #f5f3ff; }
-        .dark { --app-bg: #0a0812; }
-        @media (prefers-color-scheme: dark) { :root { --app-bg: #0a0812; } }
-      `}</style>
+    <div className="min-h-screen flex page-shell">
+      <PageBackground />
       <Sidebar role={role} />
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${mainShift} w-full min-w-0`}>
+      <div className={`flex-1 flex flex-col min-h-screen min-h-[100dvh] transition-all duration-300 ${mainShift} w-full min-w-0 relative z-10`}>
         <TopBar />
-        <main className="flex-1 p-4 sm:p-6 overflow-x-hidden">
+        <main className="flex-1 p-4 sm:p-6 overflow-x-hidden pb-[max(1rem,env(safe-area-inset-bottom))]">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

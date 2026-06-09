@@ -2,7 +2,8 @@ import { client } from './client'
 
 export const groupsApi = {
   list: async (params?: Record<string, unknown>) => {
-    const res = await client.get('/groups', { params })
+    // Trailing slash avoids the 307 redirect that strips the auth header.
+    const res = await client.get('/groups/', { params })
     return res.data
   },
   get: async (id: string) => {
@@ -10,7 +11,8 @@ export const groupsApi = {
     return res.data
   },
   create: async (data: { name: string; description?: string }) => {
-    const res = await client.post('/groups', data)
+    // Trailing slash avoids the 307 redirect that strips the auth header.
+    const res = await client.post('/groups/', data)
     return res.data
   },
   update: async (id: string, data: Record<string, unknown>) => {

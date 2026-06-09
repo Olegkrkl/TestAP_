@@ -25,7 +25,7 @@ export default function QuestionNav({ questions, currentIndex, answers, flagged,
           const isFlagged = flagged.includes(q.id)
           const isCurrent = i === currentIndex
 
-          let cls = 'w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer '
+          let cls = 'w-9 h-9 sm:w-8 sm:h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer touch-manipulation '
           if (isCurrent) cls += 'bg-primary-600 text-white'
           else if (isFlagged) cls += 'bg-yellow-400 text-yellow-900'
           else if (isAnswered) cls += 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'

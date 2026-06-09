@@ -2,7 +2,11 @@ import { client, downloadAuthed } from './client'
 
 export const testsApi = {
   list: async (params?: Record<string, unknown>) => {
-    const res = await client.get('/tests', { params })
+    // Trailing slash is required: the backend collection route is `/tests/`.
+    // Hitting `/tests` triggers a 307 redirect to `/tests/`, and the browser
+    // drops the Authorization header across that (cross-origin) redirect,
+    // producing a spurious 401 "Not authenticated".
+    const res = await client.get('/tests/', { params })
     return res.data
   },
   get: async (id: string) => {
@@ -10,7 +14,9 @@ export const testsApi = {
     return res.data
   },
   create: async (data: Record<string, unknown>) => {
-    const res = await client.post('/tests', data)
+    // Trailing slash required — see note on `list` above (avoids the 307 that
+    // strips the auth header and yields a false "Not authenticated").
+    const res = await client.post('/tests/', data)
     return res.data
   },
   update: async (id: string, data: Record<string, unknown>) => {

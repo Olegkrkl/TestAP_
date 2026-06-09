@@ -19,6 +19,39 @@ async def get_remaining_seconds(session: TestSession, test: Test) -> Optional[in
     return max(0, remaining)
 
 
+async def get_resume_session(
+    db: AsyncSession,
+    user_id: str,
+    test_id: str,
+    *,
+    cleanup_duplicates: bool = True,
+) -> Optional[TestSession]:
+    """Return the newest in-progress session for a user/test pair.
+
+    React Strict Mode (and other double-mount races) can create duplicate
+    in-progress rows; keep the latest and drop the rest so callers never hit
+    MultipleResultsFound.
+    """
+    result = await db.execute(
+        select(TestSession)
+        .where(
+            TestSession.user_id == user_id,
+            TestSession.test_id == test_id,
+            TestSession.status == "in_progress",
+        )
+        .order_by(TestSession.started_at.desc())
+    )
+    sessions = result.scalars().all()
+    if not sessions:
+        return None
+
+    active = sessions[0]
+    if cleanup_duplicates and len(sessions) > 1:
+        for stale in sessions[1:]:
+            await db.delete(stale)
+    return active
+
+
 async def auto_submit_expired_sessions(db: AsyncSession) -> int:
     """Auto-submit in-progress sessions in two cases:
 

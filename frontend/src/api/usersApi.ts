@@ -18,7 +18,8 @@ export const usersApi = {
     return res.data
   },
   list: async (params?: Record<string, unknown>) => {
-    const res = await client.get('/users', { params })
+    // Trailing slash avoids the 307 redirect that strips the auth header.
+    const res = await client.get('/users/', { params })
     return res.data
   },
   update: async (id: string, data: Record<string, unknown>) => {
@@ -32,7 +33,8 @@ export const usersApi = {
 
 export const notificationsApi = {
   list: async () => {
-    const res = await client.get('/notifications')
+    // Trailing slash avoids the 307 redirect that strips the auth header.
+    const res = await client.get('/notifications/')
     return res.data
   },
   markAllRead: async () => {

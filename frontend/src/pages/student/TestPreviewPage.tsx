@@ -199,7 +199,7 @@ export default function TestPreviewPage() {
       </div>
 
       {/* Action */}
-      <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-white/[0.06] py-4 -mx-4 px-4 flex justify-end gap-3">
+      <div className="app-footer-bar py-4 -mx-4 px-4 flex flex-col sm:flex-row justify-end gap-3">
         <Link to="/tests" className="btn-secondary">Скасувати</Link>
         <button
           disabled={!canStart}

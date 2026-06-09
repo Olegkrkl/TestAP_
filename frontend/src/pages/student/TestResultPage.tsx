@@ -8,6 +8,7 @@ import type { TestResult, QuestionStat } from '@/app/slices/sessionSlice'
 import ResultCircle from '@/components/ui/ResultCircle'
 import Badge from '@/components/ui/Badge'
 import Spinner from '@/components/ui/Spinner'
+import PageBackground from '@/components/ui/PageBackground'
 
 export default function TestResultPage() {
   const { id } = useParams<{ id: string }>()
@@ -23,18 +24,28 @@ export default function TestResultPage() {
     }
   }, [result, activeSession])
 
-  if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>
+  if (loading) return (
+    <div className="page-shell flex justify-center py-20">
+      <PageBackground />
+      <div className="relative z-10"><Spinner size="lg" /></div>
+    </div>
+  )
   if (!result) return (
-    <div className="text-center py-20">
+    <div className="page-shell text-center py-20 px-4">
+      <PageBackground />
+      <div className="relative z-10">
       <p className="text-gray-500">Результат не знайдено</p>
       <Link to="/tests" className="btn-primary mt-4 inline-flex">До тестів</Link>
+      </div>
     </div>
   )
 
   const correctCount = result.per_question_stats.filter(q => q.correct).length
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-12">
+    <div className="page-shell px-4 sm:px-6 py-6">
+      <PageBackground />
+    <div className="relative z-10 max-w-3xl mx-auto space-y-6 pb-[max(3rem,env(safe-area-inset-bottom))]">
       {/* Result card */}
       <div className="card text-center overflow-hidden">
         {/* Passed/Failed gradient banner */}
@@ -104,6 +115,7 @@ export default function TestResultPage() {
           ))}
         </div>
       </div>
+    </div>
     </div>
   )
 }
