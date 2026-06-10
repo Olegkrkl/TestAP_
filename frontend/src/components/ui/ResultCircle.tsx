@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useCountUp } from '@/lib/useCountUp'
+import { useCountUp } from '@/hooks/useCountUp'
 
 interface Props {
   percent: number
