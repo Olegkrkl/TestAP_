@@ -66,6 +66,7 @@ class TestCreate(BaseModel):
     partial_scoring: bool = False
     tags: List[str] = []
     category: Optional[str] = None
+    status: Optional[str] = None
 
 
 class TestUpdate(BaseModel):

@@ -41,7 +41,10 @@ async def create_test(data: TestCreate, current_user: CurrentUser, db: AsyncSess
     # tests remain teacher/admin-only.
     if current_user.role not in ("teacher", "admin") and not data.is_training:
         raise HTTPException(status_code=403, detail="Students can only create training tests")
-    test = Test(**data.model_dump(), author_id=current_user.id)
+    payload = data.model_dump(exclude_none=True)
+    if data.is_training:
+        payload["status"] = payload.get("status") or "published"
+    test = Test(**payload, author_id=current_user.id)
     db.add(test)
     await db.flush()
     return await _test_out(test, db)

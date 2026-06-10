@@ -1,6 +1,35 @@
-import axios from 'axios'
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
+
+const NETWORK_RETRIES = 3
+const NETWORK_RETRY_DELAY_MS = 2500
+
+function formatApiError(error: AxiosError): string {
+  if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+    return 'Не вдалося підключитись до сервера. Зачекайте 30–60 сек (сервер прокидається) і спробуйте знову.'
+  }
+  const detail = (error.response?.data as { detail?: unknown } | undefined)?.detail
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    return detail.map((d) => (typeof d === 'object' && d && 'msg' in d ? String((d as { msg: string }).msg) : String(d))).join('; ')
+  }
+  if (error.response?.status === 500) {
+    return 'Помилка сервера. Спробуйте ще раз через кілька секунд.'
+  }
+  return error.message || 'Unknown error'
+}
+
+function shouldRetryNetwork(error: AxiosError, config?: InternalAxiosRequestConfig & { __retryCount?: number }) {
+  if (!config || (config.__retryCount ?? 0) >= NETWORK_RETRIES) return false
+  if (!error.response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error')) return true
+  const status = error.response?.status
+  return status === 502 || status === 503 || status === 504
+}
+
+async function delay(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 export const client = axios.create({
   baseURL: BASE_URL,
@@ -44,9 +73,16 @@ let failedQueue: Array<{ resolve: (v: string) => void; reject: (e: unknown) => v
 
 client.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const original = error.config
-    if (error.response?.status === 401 && !original._retry) {
+  async (error: AxiosError) => {
+    const original = error.config as (InternalAxiosRequestConfig & { _retry?: boolean; __retryCount?: number }) | undefined
+
+    if (shouldRetryNetwork(error, original)) {
+      original!.__retryCount = (original!.__retryCount ?? 0) + 1
+      await delay(NETWORK_RETRY_DELAY_MS * original!.__retryCount)
+      return client(original!)
+    }
+
+    if (error.response?.status === 401 && original && !original._retry) {
       original._retry = true
       const { refreshToken } = getAuthState()
       if (!refreshToken) {
@@ -80,8 +116,7 @@ client.interceptors.response.use(
         isRefreshing = false
       }
     }
-    const message = error.response?.data?.detail || error.message || 'Unknown error'
-    return Promise.reject(new Error(message))
+    return Promise.reject(new Error(formatApiError(error)))
   }
 )
 

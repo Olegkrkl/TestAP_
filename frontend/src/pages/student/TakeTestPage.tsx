@@ -33,10 +33,8 @@ export default function TakeTestPage() {
     if (!id || initStartedRef.current) return
     initStartedRef.current = true
     const init = async () => {
-      const [test, session] = await Promise.all([
-        testsApi.get(id),
-        sessionsApi.start(id),
-      ])
+      const session = await sessionsApi.start(id)
+      const test = await testsApi.get(id)
       dispatch(setActiveTest(test))
       dispatch(setSession(session))
       setLoading(false)

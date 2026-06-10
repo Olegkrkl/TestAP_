@@ -45,12 +45,12 @@ export default function CreateTrainingTest() {
     setSaving(true)
     try {
       const test = await testsApi.create({ title, description, is_training: true, status: 'published', attempts_allowed: 999 })
-      for (const q of questions) {
-        await testsApi.addQuestion(test.id, {
+      await Promise.all(questions.map((q) =>
+        testsApi.addQuestion(test.id, {
           type: q.type, content: q.content, hint: q.hint, explanation: q.explanation,
           points: q.points, order_index: q.order_index, options: q.options,
         })
-      }
+      ))
       navigate('/my-tests')
     } catch (e: any) {
       alert(e.message || 'Помилка збереження')
