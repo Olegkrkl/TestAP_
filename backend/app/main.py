@@ -101,6 +101,8 @@ app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_cors_origins(),
+    # Allow all Vercel preview/production URLs (e.g. test-ap-xi.vercel.app).
+    allow_origin_regex=r"https://([a-z0-9-]+\.)*vercel\.app",
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

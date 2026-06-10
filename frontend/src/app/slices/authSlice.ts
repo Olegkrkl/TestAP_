@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import axios from 'axios'
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
+import { client } from '@/api/client'
 
 export interface User {
   id: string
@@ -34,10 +32,15 @@ export const loginThunk = createAsyncThunk(
   'auth/login',
   async (creds: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${BASE_URL}/auth/login`, creds)
+      const res = await client.post('/auth/login', creds)
       return res.data
     } catch (e: unknown) {
-      const err = e as { response?: { data?: { detail?: string } }; message?: string }
+      const err = e as { response?: { data?: { detail?: string } }; message?: string; code?: string }
+      if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        return rejectWithValue(
+          'Не вдалося підключитись до сервера. Зачекайте 30–60 сек (сервер прокидається) і спробуйте знову.'
+        )
+      }
       return rejectWithValue(err.response?.data?.detail || err.message || 'Login failed')
     }
   }
@@ -47,7 +50,7 @@ export const registerThunk = createAsyncThunk(
   'auth/register',
   async (creds: { email: string; password: string; full_name: string; role: string }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${BASE_URL}/auth/register`, creds)
+      const res = await client.post('/auth/register', creds)
       return res.data
     } catch (e: unknown) {
       const err = e as { response?: { data?: { detail?: string } }; message?: string }
@@ -60,7 +63,7 @@ export const refreshThunk = createAsyncThunk(
   'auth/refresh',
   async (refreshToken: string, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${BASE_URL}/auth/refresh`, { refresh_token: refreshToken })
+      const res = await client.post('/auth/refresh', { refresh_token: refreshToken })
       return res.data
     } catch (e: unknown) {
       const err = e as { response?: { data?: { detail?: string } }; message?: string }
@@ -73,7 +76,7 @@ export const googleLoginThunk = createAsyncThunk(
   'auth/google',
   async (data: { credential: string; role: string }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${BASE_URL}/auth/google`, data)
+      const res = await client.post('/auth/google', data)
       return res.data
     } catch (e: unknown) {
       const err = e as { response?: { data?: { detail?: string } }; message?: string }

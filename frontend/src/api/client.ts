@@ -5,6 +5,8 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 export const client = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  // Render free tier cold start can take up to ~60s.
+  timeout: 120_000,
 })
 
 function getAuthState() {
