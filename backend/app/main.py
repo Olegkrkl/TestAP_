@@ -7,7 +7,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from app.core.config import settings
+from app.core.config import settings, get_cors_origins
 from app.core.database import AsyncSessionLocal
 from app.core.rate_limit import limiter
 from app.services.session_service import auto_submit_expired_sessions
@@ -100,7 +100,7 @@ app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=get_cors_origins(),
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

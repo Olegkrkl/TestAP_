@@ -62,6 +62,8 @@ API docs available at: http://localhost:8000/docs
 | `GOOGLE_CLIENT_ID` | OAuth Web client_id from Google Cloud Console. Empty = Google button hidden |
 | `RESEND_API_KEY` / `EMAIL_FROM` | Outgoing email (verification, reminders). Optional |
 | `REQUIRE_EMAIL_VERIFICATION` | `true` blocks login until email is verified |
+| `FRONTEND_URL` | Allowed CORS origin (Vercel URL in production) |
+| `CORS_ORIGINS` | Optional comma-separated extra origins (preview URLs) |
 | `LOGIN_RATE_LIMIT_PER_MINUTE` | slowapi limit per IP for `/auth/login` |
 | `SESSION_IDLE_TIMEOUT_MINUTES` | Auto-finalize in-progress sessions after this much idleness |
 
@@ -77,6 +79,21 @@ npm run dev
 ```
 
 App available at: http://localhost:5173
+
+## Production Deployment
+
+Deploy to **Supabase** (database) + **Render** (backend) + **Vercel** (frontend).
+
+See **[DEPLOY.md](./DEPLOY.md)** for a full Ukrainian step-by-step guide.
+
+Quick reference:
+
+| Service | Env vars |
+|---------|----------|
+| Render (backend) | `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL` |
+| Vercel (frontend) | `VITE_API_BASE_URL=https://your-api.onrender.com/api/v1` |
+
+Files: `render.yaml`, `backend/Dockerfile`, `frontend/vercel.json`.
 
 ## Features
 

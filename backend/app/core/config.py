@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     FRONTEND_URL: str = "http://localhost:5173"
+    # Optional comma-separated extra origins (e.g. Vercel preview URLs).
+    CORS_ORIGINS: str = ""
     RESEND_API_KEY: str = ""
     EMAIL_FROM: str = "TestAP <noreply@testap.app>"
     # Google OAuth (Google Identity Services). Leave empty to disable Google login.
@@ -26,3 +28,16 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def get_cors_origins() -> list[str]:
+    origins: list[str] = []
+    if settings.FRONTEND_URL:
+        origins.append(settings.FRONTEND_URL.rstrip("/"))
+    if settings.CORS_ORIGINS:
+        origins.extend(
+            o.strip().rstrip("/")
+            for o in settings.CORS_ORIGINS.split(",")
+            if o.strip()
+        )
+    return origins or ["*"]
