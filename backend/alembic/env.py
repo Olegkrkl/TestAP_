@@ -10,7 +10,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.config import settings
-from app.core.database import Base
+from app.core.database import Base, PGBOUNCER_CONNECT_ARGS
 import app.models  # noqa: F401 - registers all models
 
 config = context.config
@@ -46,6 +46,7 @@ async def run_async_migrations() -> None:
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=PGBOUNCER_CONNECT_ARGS,
     )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

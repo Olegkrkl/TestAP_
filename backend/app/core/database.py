@@ -2,13 +2,15 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
 
+# Supabase Supavisor (transaction pooler, port 6543) does not support
+# asyncpg prepared statements — disable cache for app + Alembic migrations.
+PGBOUNCER_CONNECT_ARGS = {"statement_cache_size": 0}
+
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
     pool_pre_ping=True,
-    # Supabase Supavisor (transaction pooler, port 6543) does not support
-    # asyncpg prepared statements — disable cache to avoid intermittent 500s.
-    connect_args={"statement_cache_size": 0},
+    connect_args=PGBOUNCER_CONNECT_ARGS,
 )
 AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
